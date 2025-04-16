@@ -1,0 +1,178 @@
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.card {
+  background: rgba(41, 40, 47, 255);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.neon-accent {
+  color: #c2f542;
+}
+
+.neon-bg {
+  background-color: #c2f542;
+}
+
+.chart-container {
+  background: rgba(37, 37, 37, 0.95);
+  border-radius: 20px;
+  padding: 1.5rem;
+}
+
+.swipe-indicator {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.alert-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.alert-slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.patient-card {
+  transition: all 0.3s ease;
+}
+
+.patient-card.selected {
+  border: 2px solid #c2f542;
+  background: rgba(194, 245, 66, 0.1);
+}
+
+.chart-section {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-out;
+}
+
+.chart-section.visible {
+  max-height: 2000px;
+  transition: max-height 0.5s ease-in;
+}
+
+.filter-chip {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.filter-chip.active {
+  background-color: #c2f542;
+  color: #1a1a1a;
+}
+
+.search-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+}
+
+.search-input:focus {
+  border-color: #c2f542;
+  outline: none;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .mobile-search-focused .patient-list-container {
+    display: none;
+  }
+
+  .mobile-search-focused .search-results {
+    display: block;
+  }
+
+  .search-results {
+    display: none;
+  }
+
+  .quick-actions {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .quick-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chart-container {
+    padding: 1rem 0;
+  }
+}
+
+.quick-action-btn {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.quick-action-btn.active {
+  background-color: #c2f542;
+  color: #1a1a1a;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
