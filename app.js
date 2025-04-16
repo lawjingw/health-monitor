@@ -337,6 +337,7 @@ function init() {
   setupEventListeners();
   initializeCharts();
   initializeMobileView();
+  initializeTheme(); // Initialize theme based on user preference
 
   // Track user interaction
   window.hasUserInteracted = false;
@@ -781,8 +782,41 @@ function setupEventListeners() {
 // Update charts with new data
 function updateCharts(patient) {
   const timestamps = patient.history.heartRate.map((point) => point.x);
+  const currentTheme = document.documentElement.classList.contains("light")
+    ? "light"
+    : "dark";
+
+  // Get theme-appropriate colors
+  const lineColor = currentTheme === "dark" ? "#c2f542" : "#3f88f5";
+  const secondaryLineColor = currentTheme === "dark" ? "#f5c842" : "#f5a742";
+  const gridColor =
+    currentTheme === "dark"
+      ? "rgba(255, 255, 255, 0.05)"
+      : "rgba(0, 0, 0, 0.05)";
+  const textColor =
+    currentTheme === "dark" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)";
+
+  // Update chart colors based on theme
+  const updateChartColors = (chart, primaryColor) => {
+    if (
+      chart &&
+      chart.data &&
+      chart.data.datasets &&
+      chart.data.datasets.length > 0
+    ) {
+      chart.data.datasets[0].borderColor = primaryColor;
+      chart.data.datasets[0].backgroundColor = `${primaryColor}1A`; // 10% opacity
+
+      // Update scale colors
+      if (chart.options && chart.options.scales) {
+        chart.options.scales.y.grid.color = gridColor;
+        chart.options.scales.y.ticks.color = textColor;
+      }
+    }
+  };
 
   // Update Heart Rate Chart
+  updateChartColors(heartRateChart, lineColor);
   heartRateChart.data.labels = timestamps;
   heartRateChart.data.datasets[0].data = patient.history.heartRate.map(
     (point) => point.y
@@ -790,16 +824,22 @@ function updateCharts(patient) {
   heartRateChart.update();
 
   // Update Blood Pressure Chart
+  updateChartColors(bloodPressureChart, lineColor);
+  if (bloodPressureChart.data.datasets.length > 1) {
+    bloodPressureChart.data.datasets[1].borderColor = secondaryLineColor;
+    bloodPressureChart.data.datasets[1].backgroundColor = `${secondaryLineColor}1A`;
+  }
   bloodPressureChart.data.labels = timestamps;
   bloodPressureChart.data.datasets[0].data = patient.history.bloodPressure.map(
     (point) => point.y
   );
   bloodPressureChart.data.datasets[1].data = patient.history.bloodPressure.map(
-    (point) => point.y * 0.65 // Approximate diastolic from systolic for visualization
+    (point) => point.y * 0.65
   );
   bloodPressureChart.update();
 
   // Update Oxygen Chart
+  updateChartColors(oxygenChart, lineColor);
   oxygenChart.data.labels = timestamps;
   oxygenChart.data.datasets[0].data = patient.history.oxygenLevel.map(
     (point) => point.y
@@ -1546,6 +1586,80 @@ function resetToDefaults() {
 
   // Recheck patient's vitals with default ranges
   checkVitalAlerts(patient);
+}
+
+// Theme management
+function initializeTheme() {
+  // Check if user has a saved theme preference
+  const savedTheme = localStorage.getItem("theme") || "dark";
+  setTheme(savedTheme);
+
+  // Set up event listeners for theme toggle buttons
+  const mobileToggle = document.getElementById("darkModeToggle");
+  const desktopToggle = document.getElementById("desktopDarkModeToggle");
+
+  if (mobileToggle) {
+    mobileToggle.addEventListener("click", toggleTheme);
+  }
+
+  if (desktopToggle) {
+    desktopToggle.addEventListener("click", toggleTheme);
+  }
+
+  // Update toggle button icons to match current theme
+  updateThemeToggleIcons(savedTheme);
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.classList.contains("light")
+    ? "light"
+    : "dark";
+  const newTheme = currentTheme === "dark" ? "light" : "dark";
+  setTheme(newTheme);
+}
+
+function setTheme(theme) {
+  // Remove both theme classes and add the selected one
+  document.documentElement.classList.remove("dark", "light");
+  document.documentElement.classList.add(theme);
+
+  // Save theme preference to localStorage
+  localStorage.setItem("theme", theme);
+
+  // Update toggle button icons
+  updateThemeToggleIcons(theme);
+
+  // Re-render charts with new theme colors if needed
+  if (currentPatientId) {
+    const patient = patients.find((p) => p.id === currentPatientId);
+    if (patient) {
+      updateCharts(patient);
+    }
+  }
+}
+
+function updateThemeToggleIcons(theme) {
+  // Define SVG paths for moon and sun icons
+  const moonPath =
+    "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z";
+  const sunPath =
+    "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z";
+
+  // Get all toggle buttons
+  const toggleButtons = [
+    document.getElementById("darkModeToggle"),
+    document.getElementById("desktopDarkModeToggle"),
+  ];
+
+  // Update the path for each button's icon
+  toggleButtons.forEach((button) => {
+    if (button) {
+      const svgPath = button.querySelector("svg path");
+      if (svgPath) {
+        svgPath.setAttribute("d", theme === "dark" ? moonPath : sunPath);
+      }
+    }
+  });
 }
 
 // Initialize the app
