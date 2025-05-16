@@ -1723,11 +1723,121 @@ function updateThemeToggleIcons(theme) {
   });
 }
 
-// Message page functionality
+// Message functions
+function openNewMessageModal() {
+  const modal = document.getElementById("newMessageModal");
+  if (modal) {
+    modal.classList.remove("hidden");
+
+    // Reset the form
+    document.getElementById("newMessageForm").reset();
+    document.getElementById("attachedFileName").textContent = "";
+  }
+}
+
+function closeNewMessageModal() {
+  const modal = document.getElementById("newMessageModal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
+
+// Messages data structure to store messages
+const messages = [
+  {
+    id: 1,
+    sender: {
+      id: 2,
+      name: "Jane Smith",
+      role: "Nurse",
+      room: "203B",
+      photo: "https://i.pravatar.cc/150?img=2",
+    },
+    subject: "Blood pressure readings are concerning",
+    content:
+      "Patient's systolic pressure has increased to 160. Please review the latest readings and advise on next steps.",
+    timestamp: new Date().setHours(new Date().getHours() - 1),
+    isRead: false,
+    priority: "urgent",
+    tag: "Urgent",
+  },
+  {
+    id: 2,
+    sender: {
+      id: 5,
+      name: "William Chen",
+      role: "Doctor",
+      room: "ICU-2",
+      photo: "https://i.pravatar.cc/150?img=5",
+    },
+    subject: "Medication update for patient in ICU-2",
+    content:
+      "I've adjusted the medication schedule. Please ensure the updated dosage is administered as per the new schedule attached.",
+    timestamp: new Date().setDate(new Date().getDate() - 1),
+    isRead: false,
+    priority: "normal",
+    tag: "Update",
+  },
+  {
+    id: 3,
+    sender: {
+      id: 3,
+      name: "Robert Johnson",
+      role: "Lab",
+      room: "ICU-1",
+      photo: "https://i.pravatar.cc/150?img=3",
+    },
+    subject: "Lab results available",
+    content:
+      "The lab results for patient Robert Johnson are now available. Please review at your earliest convenience.",
+    timestamp: new Date().setDate(new Date().getDate() - 1),
+    isRead: false,
+    priority: "normal",
+    tag: "Lab Results",
+  },
+  {
+    id: 4,
+    sender: {
+      id: 1,
+      name: "John Doe",
+      role: "Nurse",
+      room: "101A",
+      photo: "https://i.pravatar.cc/150?img=1",
+    },
+    subject: "Patient status update",
+    content:
+      "Patient is recovering well after the procedure. Vital signs are stable and pain is being managed with current medication.",
+    timestamp: new Date().setDate(new Date().getDate() - 3),
+    isRead: true,
+    priority: "normal",
+    tag: "Status Update",
+  },
+  {
+    id: 5,
+    sender: {
+      id: 4,
+      name: "Maria Garcia",
+      role: "Admin",
+      room: "102A",
+      photo: "https://i.pravatar.cc/150?img=4",
+    },
+    subject: "Staff meeting reminder",
+    content:
+      "Reminder that we have a staff meeting scheduled for Friday at 2:00 PM. Please prepare your weekly reports.",
+    timestamp: new Date().setDate(new Date().getDate() - 10),
+    isRead: true,
+    priority: "normal",
+    tag: "Meeting",
+  },
+];
+
+// Enhanced initializeMessagesPage function
 function initializeMessagesPage() {
   const messagesNavLink = document.getElementById("messagesNavLink");
   const messagesPage = document.getElementById("messagesPage");
   const mainContent = document.querySelector("main");
+  const newMessageForm = document.getElementById("newMessageForm");
+  const attachFileButton = document.getElementById("attachFileButton");
 
   // Function to open the messages page
   function openMessagesPage() {
@@ -1747,6 +1857,9 @@ function initializeMessagesPage() {
     });
     messagesNavLink.classList.remove("text-gray-400");
     messagesNavLink.classList.add("text-white");
+
+    // Render the message list when the page is opened
+    renderMessageList();
   }
 
   // Event listener for messages nav link
@@ -1756,7 +1869,6 @@ function initializeMessagesPage() {
 
   // Handle message tab switching
   const messageTabs = document.querySelectorAll(".message-tab");
-  const messageItems = document.querySelectorAll(".message-item");
 
   messageTabs.forEach((tab) => {
     tab.addEventListener("click", () => {
@@ -1780,23 +1892,31 @@ function initializeMessagesPage() {
       );
       tab.classList.remove("text-gray-400");
 
-      // Filter messages based on tab
+      // Filter messages based on tab - get fresh reference to message items
       const tabType = tab.getAttribute("data-tab");
-      messageItems.forEach((item) => {
+      const currentMessageItems = document.querySelectorAll(".message-item");
+      let visibleCount = 0;
+
+      currentMessageItems.forEach((item) => {
         if (tabType === "all") {
           item.classList.remove("hidden");
+          visibleCount++;
         } else if (tabType === "unread" && item.classList.contains("unread")) {
           item.classList.remove("hidden");
+          visibleCount++;
         } else if (
           tabType === "urgent" &&
-          item.querySelector(".bg-red-500\\/20")
+          (item.querySelector(".bg-red-500\\/20") ||
+            item.classList.contains("message-priority-urgent"))
         ) {
           item.classList.remove("hidden");
+          visibleCount++;
         } else if (
           tabType === "archived" &&
           item.classList.contains("archived")
         ) {
           item.classList.remove("hidden");
+          visibleCount++;
         } else {
           item.classList.add("hidden");
         }
@@ -1804,60 +1924,8 @@ function initializeMessagesPage() {
     });
   });
 
-  // Make message items clickable to mark as read
-  messageItems.forEach((item) => {
-    item.addEventListener("click", () => {
-      // Mark as read when clicked
-      item.classList.remove("unread");
-
-      // Update the message status icon (green dot)
-      const statusIcon = item.querySelector(".absolute .bg-\\[\\#c2f542\\]");
-      if (statusIcon) {
-        statusIcon.remove();
-      }
-
-      // Remove unread count badge
-      const unreadBadge = item.querySelector(".ml-2.bg-red-500");
-      if (unreadBadge) {
-        unreadBadge.remove();
-      }
-
-      // Update the total unread count in the navigation
-      updateUnreadMessageCount();
-    });
-  });
-
-  // Function to update the unread message count in navigation
-  function updateUnreadMessageCount() {
-    const unreadMessages = document.querySelectorAll(
-      ".message-item.unread"
-    ).length;
-    const unreadCountBadge = document.querySelector(
-      "#messagesNavLink .bg-red-500"
-    );
-
-    if (unreadCountBadge) {
-      if (unreadMessages > 0) {
-        unreadCountBadge.textContent = unreadMessages;
-        unreadCountBadge.classList.remove("hidden");
-      } else {
-        unreadCountBadge.classList.add("hidden");
-      }
-    }
-
-    // Also update the count in the unread tab
-    const unreadTabBadge = document.querySelector(
-      '.message-tab[data-tab="unread"] .bg-red-500'
-    );
-    if (unreadTabBadge) {
-      unreadTabBadge.textContent = unreadMessages;
-      if (unreadMessages === 0) {
-        unreadTabBadge.classList.add("hidden");
-      } else {
-        unreadTabBadge.classList.remove("hidden");
-      }
-    }
-  }
+  // Make message items clickable to mark as read - REMOVED incorrect reference to messageItems
+  // Events will be attached in attachMessageEventListeners function
 
   // Home link to go back to main dashboard
   const homeLink = document.getElementById("homeNavLink");
@@ -1874,6 +1942,536 @@ function initializeMessagesPage() {
       homeLink.classList.remove("text-gray-400");
       homeLink.classList.add("text-white");
     });
+  }
+
+  // Handle file attachment
+  if (attachFileButton) {
+    attachFileButton.addEventListener("click", () => {
+      // Simulate file selection dialog
+      // In a real app, this would use <input type="file">
+      setTimeout(() => {
+        document.getElementById("attachedFileName").textContent =
+          "patient_vitals.pdf";
+      }, 500);
+    });
+  }
+
+  // Handle new message form submission
+  if (newMessageForm) {
+    newMessageForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      // Get form values
+      const recipient = document.getElementById("messageRecipient").value;
+      const subject = document.getElementById("messageSubject").value;
+      const content = document.getElementById("messageContent").value;
+      const priority = document.querySelector(
+        'input[name="messagePriority"]:checked'
+      ).value;
+
+      // Create a new message object
+      const newMessage = {
+        id: messages.length + 1,
+        sender: {
+          id: 0, // Current user
+          name: "You",
+          role: "Nurse",
+          photo: "https://i.pravatar.cc/150?img=1",
+        },
+        recipient: patients.find((p) => p.id == recipient) || {
+          name: "All Staff",
+        },
+        subject: subject,
+        content: content,
+        timestamp: new Date(),
+        isRead: true,
+        priority: priority,
+        tag: priority === "urgent" ? "Urgent" : "Message",
+      };
+
+      // Add to messages array (in a real app, this would be sent to server)
+      messages.push(newMessage);
+
+      // Render the updated message list
+      renderMessageList();
+
+      // Show success toast instead of alert
+      showToast("Message sent successfully!", "success");
+
+      // Close modal
+      closeNewMessageModal();
+    });
+  }
+
+  // The renderMessageList function has been moved outside of this function to be globally accessible
+
+  // The attachMessageEventListeners function has been moved outside of this function to be globally accessible
+
+  // Call the global renderMessageList function to initialize the list at startup
+  setTimeout(renderMessageList, 100); // Small delay to ensure DOM is ready
+
+  // Populate recipient dropdown from patients data
+  function populateRecipientDropdown() {
+    const select = document.getElementById("messageRecipient");
+    if (select) {
+      // Clear existing options except the first one
+      const defaultOption = select.options[0];
+      select.innerHTML = "";
+      select.appendChild(defaultOption);
+
+      // Add patients as options
+      patients.forEach((patient) => {
+        const option = document.createElement("option");
+        option.value = patient.id;
+        option.textContent = `${patient.name} (Room ${patient.room})`;
+        select.appendChild(option);
+      });
+
+      // Add group options
+      const groups = [
+        { value: "group_nurses", text: "All Nurses" },
+        { value: "group_doctors", text: "All Doctors" },
+        { value: "group_staff", text: "All Staff" },
+      ];
+
+      // Add a separator
+      const separator = document.createElement("option");
+      separator.disabled = true;
+      separator.textContent = "───────────────";
+      select.appendChild(separator);
+
+      // Add group options
+      groups.forEach((group) => {
+        const option = document.createElement("option");
+        option.value = group.value;
+        option.textContent = group.text;
+        select.appendChild(option);
+      });
+    }
+  }
+
+  // Call the function to populate the dropdown
+  populateRecipientDropdown();
+}
+
+// Function to update the unread message count in navigation
+function updateUnreadMessageCount() {
+  const unreadMessages = document.querySelectorAll(
+    ".message-item.unread"
+  ).length;
+  console.log(`Updating unread count to: ${unreadMessages}`);
+
+  // Update the badge in the messages nav link
+  const navBadge = document.querySelector("#messagesNavLink .bg-red-500");
+  if (navBadge) {
+    if (unreadMessages > 0) {
+      navBadge.textContent = unreadMessages;
+      navBadge.classList.remove("hidden");
+      console.log("Updated nav badge");
+    } else {
+      navBadge.classList.add("hidden");
+      console.log("Hid nav badge");
+    }
+  } else {
+    console.log("Nav badge not found");
+  }
+
+  // Try multiple selectors to find the unread tab badge
+  let tabBadge = document.querySelector(
+    '.message-tab[data-tab="unread"] .ml-1.bg-red-500'
+  );
+
+  if (!tabBadge) {
+    console.log("First selector failed, trying another approach");
+    // Try a more general selector
+    tabBadge = document.querySelector('.message-tab[data-tab="unread"] span');
+  }
+
+  if (!tabBadge) {
+    console.log("Second selector failed, trying direct child selector");
+    // Try direct child selector
+    const unreadTab = document.querySelector('.message-tab[data-tab="unread"]');
+    if (unreadTab) {
+      tabBadge = unreadTab.querySelector("span");
+    }
+  }
+
+  if (tabBadge) {
+    console.log(`Found tab badge, updating to ${unreadMessages}`);
+    tabBadge.textContent = unreadMessages;
+    if (unreadMessages === 0) {
+      tabBadge.classList.add("hidden");
+    } else {
+      tabBadge.classList.remove("hidden");
+    }
+  } else {
+    console.log("Failed to find tab badge with any selector");
+  }
+}
+
+// Global function to render messages that can be called directly from HTML
+function renderMessageList() {
+  // Get the message list container
+  const messageList = document.getElementById("messageList");
+  if (!messageList) {
+    console.error("Message list container not found");
+    return;
+  }
+
+  // Sort messages by timestamp (newest first)
+  const sortedMessages = [...messages].sort(
+    (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+  );
+
+  // Count unread messages
+  const unreadCount = sortedMessages.filter((msg) => !msg.isRead).length;
+  console.log(`Rendering message list with ${unreadCount} unread messages`);
+
+  // Clear the list
+  messageList.innerHTML = "";
+
+  // Add messages to the list
+  sortedMessages.forEach((message) => {
+    // Format the timestamp
+    const messageDate = new Date(message.timestamp);
+    let timeString;
+
+    const now = new Date();
+    const isToday = messageDate.toDateString() === now.toDateString();
+    const isYesterday =
+      new Date(now - 86400000).toDateString() === messageDate.toDateString();
+
+    if (isToday) {
+      timeString = messageDate.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } else if (isYesterday) {
+      timeString = "Yesterday";
+    } else {
+      timeString = messageDate.toLocaleDateString([], {
+        month: "short",
+        day: "numeric",
+      });
+    }
+
+    // Create message HTML with message ID as data attribute
+    const messageHTML = `
+      <div class="card p-4 hover:bg-[rgba(255,255,255,0.05)] cursor-pointer transition-colors message-item ${
+        message.isRead ? "" : "unread"
+      } message-priority-${message.priority}" data-message-id="${message.id}">
+        <div class="flex justify-between items-start mb-2">
+          <div class="flex items-center">
+            <div class="relative">
+              <img src="${message.sender.photo}" alt="${
+      message.sender.name
+    }" class="w-10 h-10 rounded-full mr-3">
+              ${
+                !message.isRead
+                  ? `<span class="absolute top-0 right-2 h-3 w-3 rounded-full bg-[#c2f542]"></span>`
+                  : ""
+              }
+            </div>
+            <div>
+              <h3 class="font-semibold text-white">${message.sender.name}</h3>
+              <p class="text-xs text-gray-400">Room ${
+                message.sender.room || ""
+              } ${message.sender.role ? `• ${message.sender.role}` : ""}</p>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <span class="text-xs text-gray-400">${timeString}</span>
+            ${
+              !message.isRead
+                ? `<span class="ml-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">1</span>`
+                : ""
+            }
+          </div>
+        </div>
+        <div>
+          <p class="text-white font-medium">${message.subject}</p>
+          <p class="text-gray-400 text-sm mt-1 line-clamp-2">${
+            message.content
+          }</p>
+        </div>
+        <div class="flex justify-between items-center mt-3">
+          <span class="${getBadgeClass(message.tag)}">${message.tag}</span>
+          <div class="flex space-x-2">
+            <button class="p-1 text-gray-400 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </button>
+            <button class="p-1 text-gray-400 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add to the list
+    messageList.innerHTML += messageHTML;
+  });
+
+  // Attach event listeners to message items
+  attachMessageEventListeners();
+
+  // Update the unread count
+  updateUnreadMessageCount();
+
+  // Apply current active tab filter
+  applyActiveTabFilter();
+
+  // Show toast notification
+  if (sortedMessages.length === 0) {
+    showToast("No messages found", "info");
+  }
+}
+
+// Function to attach event listeners to message items
+function attachMessageEventListeners() {
+  const messageItems = document.querySelectorAll(".message-item");
+  console.log(
+    `Attaching event listeners to ${messageItems.length} message items`
+  );
+
+  messageItems.forEach((item, index) => {
+    // Remove existing event listeners first to prevent duplicates
+    const newItem = item.cloneNode(true);
+    item.parentNode.replaceChild(newItem, item);
+
+    // Add new event listeners
+    newItem.addEventListener("click", () => {
+      // Mark as read
+      const wasUnread = newItem.classList.contains("unread");
+      console.log(`Message clicked, was unread: ${wasUnread}`);
+
+      if (wasUnread) {
+        newItem.classList.remove("unread");
+
+        // Remove the unread indicator
+        const indicator = newItem.querySelector(
+          ".absolute .bg-\\[\\#c2f542\\]"
+        );
+        if (indicator) {
+          indicator.remove();
+        }
+
+        // Remove the unread badge
+        const badge = newItem.querySelector(".ml-2.bg-red-500");
+        if (badge) {
+          badge.remove();
+        }
+
+        // Find the message in the messages array by ID
+        const messageId = parseInt(newItem.getAttribute("data-message-id"));
+        console.log(`Looking for message with ID: ${messageId}`);
+
+        if (!isNaN(messageId)) {
+          const messageIndex = messages.findIndex((m) => m.id === messageId);
+          if (messageIndex !== -1) {
+            console.log(
+              `Found message at index ${messageIndex}, marking as read`
+            );
+            messages[messageIndex].isRead = true;
+          } else {
+            console.log(
+              `Message with ID ${messageId} not found in messages array`
+            );
+          }
+        }
+
+        // Update the unread count
+        updateUnreadMessageCount();
+
+        // Direct DOM update to the unread tab badge as a failsafe
+        const unreadCount = document.querySelectorAll(
+          ".message-item.unread"
+        ).length;
+        const tabBadge = document.querySelector(
+          '.message-tab[data-tab="unread"] span'
+        );
+        if (tabBadge) {
+          tabBadge.textContent = unreadCount;
+          if (unreadCount === 0) {
+            tabBadge.classList.add("hidden");
+          }
+        }
+
+        // Show toast notification
+        showToast("Message marked as read", "info", 2000);
+      }
+    });
+  });
+}
+
+// Function to apply the active tab filter for messages
+function applyActiveTabFilter() {
+  const activeTab = document.querySelector(".message-tab.active");
+  if (activeTab) {
+    const tabType = activeTab.getAttribute("data-tab");
+    const messageItems = document.querySelectorAll(".message-item");
+
+    // No need to filter if "all" is selected
+    if (tabType === "all") return;
+
+    // Apply filtering based on the active tab
+    messageItems.forEach((item) => {
+      if (tabType === "unread" && item.classList.contains("unread")) {
+        item.classList.remove("hidden");
+      } else if (
+        tabType === "urgent" &&
+        (item.querySelector(".bg-red-500\\/20") ||
+          item.classList.contains("message-priority-urgent"))
+      ) {
+        item.classList.remove("hidden");
+      } else if (
+        tabType === "archived" &&
+        item.classList.contains("archived")
+      ) {
+        item.classList.remove("hidden");
+      } else {
+        item.classList.add("hidden");
+      }
+    });
+  }
+}
+
+// Function to get the appropriate badge class based on tag
+function getBadgeClass(tag) {
+  switch (tag) {
+    case "Urgent":
+      return "bg-red-500/20 text-red-400 text-xs py-1 px-2 rounded-full";
+    case "Update":
+      return "bg-yellow-500/20 text-yellow-400 text-xs py-1 px-2 rounded-full";
+    case "Lab Results":
+      return "bg-blue-500/20 text-blue-400 text-xs py-1 px-2 rounded-full";
+    case "Status Update":
+      return "bg-green-500/20 text-green-400 text-xs py-1 px-2 rounded-full";
+    case "Meeting":
+      return "bg-purple-500/20 text-purple-400 text-xs py-1 px-2 rounded-full";
+    default:
+      return "bg-gray-500/20 text-gray-400 text-xs py-1 px-2 rounded-full";
+  }
+}
+
+// Toast notification system
+let toastContainer;
+const toasts = [];
+let toastIdCounter = 0;
+
+// Initialize toast container reference when DOM is loaded
+document.addEventListener("DOMContentLoaded", () => {
+  toastContainer = document.getElementById("toastContainer");
+});
+
+/**
+ * Show a toast notification
+ * @param {string} message - The message to display
+ * @param {string} type - The type of toast (success, error, info, warning)
+ * @param {number} duration - Duration in ms before auto-dismiss (default: 3000ms)
+ */
+function showToast(message, type = "info", duration = 3000) {
+  const id = `toast-${toastIdCounter++}`;
+
+  // Create toast element
+  const toast = document.createElement("div");
+  toast.id = id;
+  toast.className = `toast ${type}`;
+
+  // Icon based on type
+  let icon = "";
+  switch (type) {
+    case "success":
+      icon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>`;
+      break;
+    case "error":
+      icon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>`;
+      break;
+    case "warning":
+      icon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>`;
+      break;
+    default: // info
+      icon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>`;
+  }
+
+  // Structure toast content
+  toast.innerHTML = `
+    <div class="toast-icon">${icon}</div>
+    <div class="toast-content">${message}</div>
+    <button class="toast-close" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  `;
+
+  // Add to DOM
+  if (toastContainer) {
+    toastContainer.appendChild(toast);
+    toasts.push({ id, timeoutId: null });
+
+    // Add click handler for close button
+    toast.querySelector(".toast-close").addEventListener("click", () => {
+      dismissToast(id);
+    });
+
+    // Animate in
+    setTimeout(() => {
+      toast.classList.add("visible");
+    }, 10);
+
+    // Auto dismiss after duration
+    const timeoutId = setTimeout(() => {
+      dismissToast(id);
+    }, duration);
+
+    // Update timeout ID in toasts array
+    const toastIndex = toasts.findIndex((t) => t.id === id);
+    if (toastIndex !== -1) {
+      toasts[toastIndex].timeoutId = timeoutId;
+    }
+  } else {
+    console.error("Toast container not found");
+  }
+
+  return id;
+}
+
+/**
+ * Dismiss a toast notification
+ * @param {string} id - The ID of the toast to dismiss
+ */
+function dismissToast(id) {
+  const toast = document.getElementById(id);
+  if (!toast) return;
+
+  // Animate out
+  toast.classList.remove("visible");
+
+  // Remove from DOM after animation
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.parentNode.removeChild(toast);
+    }
+  }, 300);
+
+  // Clear timeout and remove from toasts array
+  const toastIndex = toasts.findIndex((t) => t.id === id);
+  if (toastIndex !== -1) {
+    clearTimeout(toasts[toastIndex].timeoutId);
+    toasts.splice(toastIndex, 1);
   }
 }
 

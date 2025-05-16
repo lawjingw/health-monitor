@@ -265,3 +265,156 @@ input[type="number"] {
 #messagesPage {
   padding-bottom: 5rem;
 }
+
+/* Message styling enhancements */
+.message-priority-urgent {
+  border-left: 3px solid #f24667;
+}
+
+.message-priority-normal {
+  border-left: 3px solid #c2f542;
+}
+
+/* Form styling */
+textarea,
+input[type="text"],
+select {
+  resize: none;
+  transition: border-color 0.2s ease;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-primary);
+}
+
+textarea:focus,
+input[type="text"]:focus,
+select:focus {
+  border-color: var(--accent-color);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 25%, transparent);
+}
+
+/* Radio button styling */
+input[type="radio"] {
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  position: relative;
+}
+
+input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+input[type="radio"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 25%, transparent);
+}
+
+/* Message Modal animation */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+#newMessageModal .absolute {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+/* Toast notification styles */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 350px;
+}
+
+.toast {
+  background: var(--bg-secondary);
+  border-left: 4px solid var(--accent-color);
+  color: var(--text-primary);
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateX(30px);
+  pointer-events: none;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.toast.success {
+  border-left-color: #4caf50;
+}
+
+.toast.error {
+  border-left-color: #f44336;
+}
+
+.toast.info {
+  border-left-color: #2196f3;
+}
+
+.toast.warning {
+  border-left-color: #ff9800;
+}
+
+.toast .toast-icon {
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.toast .toast-content {
+  flex-grow: 1;
+}
+
+.toast .toast-close {
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 10px;
+  padding: 2px;
+}
+
+.toast .toast-close:hover {
+  color: var(--text-primary);
+}
+
+/* Mobile adjustments for toast */
+@media (max-width: 768px) {
+  .toast-container {
+    left: 20px;
+    right: 20px;
+    bottom: 70px; /* Above mobile navigation */
+    max-width: none;
+  }
+}
