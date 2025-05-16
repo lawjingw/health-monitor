@@ -229,7 +229,10 @@ input[type="number"] {
 }
 
 .message-item {
-  transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out,
+    transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .message-item:hover {
@@ -417,4 +420,179 @@ input[type="radio"]:focus {
     bottom: 70px; /* Above mobile navigation */
     max-width: none;
   }
+}
+
+/* Message actions menu */
+.message-actions-menu {
+  background-color: var(--bg-secondary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  z-index: 100;
+  animation: menuFadeIn 0.2s ease-out;
+  transform-origin: top right;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.message-actions-menu button {
+  transition: background-color 0.15s ease;
+}
+
+/* Prevent clicks on action buttons from triggering message click events */
+.prevent-message-click {
+  z-index: 10;
+  position: relative;
+}
+
+/* Swipe actions */
+.swipe-actions {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  display: flex;
+  z-index: 5;
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.swipe-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 65px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.swipe-actions button:hover {
+  opacity: 0.9;
+  width: 70px;
+}
+
+.swipe-actions button:active {
+  transform: scale(0.95);
+}
+
+.swipe-actions button svg {
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.3));
+  transition: transform 0.2s ease;
+}
+
+.swipe-actions button:hover svg {
+  transform: scale(1.1);
+}
+
+/* Message item swipe animations */
+.message-item {
+  transition: all 0.2s ease-in-out,
+    transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Define different animation speeds for directional swipes */
+.message-item.swiping-left {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.message-item.swiping-right {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.message-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.message-item.unread {
+  border-left: 3px solid #c2f542;
+}
+
+/* Archive/unarchive transitions */
+.message-item.archived {
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+/* Animation for the archive badge */
+.message-item .archive-badge {
+  animation: badgeAppear 0.3s ease;
+}
+
+@keyframes badgeAppear {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes swipeHint {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-20px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes swipeHintShine {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.message-item.swipe-hint {
+  animation: swipeHint 0.8s cubic-bezier(0.3, 0.1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.message-item.swipe-hint::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  background: linear-gradient(
+    to left,
+    rgba(194, 245, 66, 0.7),
+    rgba(194, 245, 66, 0)
+  );
+  animation: swipeHintShine 0.8s cubic-bezier(0.3, 0.1, 0.3, 1);
+  pointer-events: none;
 }

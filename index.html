@@ -588,7 +588,7 @@
           <div class="flex">
             <button
               onclick="openNewMessageModal()"
-              class="btn bg-[#c2f542] text-[#1a1a1a] hover:bg-[#b0e03a] flex items-center mr-2"
+              class="btn neon-bg text-[#1a1a1a] hover:brightness-110 flex items-center"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -605,26 +605,6 @@
                 />
               </svg>
               New Message
-            </button>
-            <button
-              onclick="renderMessageList()"
-              class="btn bg-blue-500 text-white hover:bg-blue-600 flex items-center"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              Refresh
             </button>
           </div>
         </div>
@@ -655,10 +635,15 @@
               Urgent
             </button>
             <button
-              class="message-tab py-2 px-1 text-gray-400 font-medium hover:text-white"
+              class="flex message-tab py-2 px-1 text-gray-400 font-medium hover:text-white"
               data-tab="archived"
             >
               Archived
+              <span
+                class="ml-1 bg-gray-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden"
+                id="archivedCount"
+                >0</span
+              >
             </button>
           </div>
         </div>

@@ -301,6 +301,18 @@ let activeAlerts = new Map();
 let lastAlertTime = new Map();
 let dismissedAlerts = new Set(); // Track dismissed alerts
 
+// Track if swipe hint has been shown
+let hasShownSwipeHint = localStorage.getItem("hasShownSwipeHint") === "true";
+
+// Function to show a swipe hint toast the first time a user clicks a message
+function showSwipeHintToast() {
+  if (!hasShownSwipeHint) {
+    showToast("Swipe left on this message to see options", "info", 3000);
+    localStorage.setItem("hasShownSwipeHint", "true");
+    hasShownSwipeHint = true;
+  }
+}
+
 // Initialize history with some data points
 function initializePatientHistory() {
   const now = new Date();
@@ -1838,6 +1850,7 @@ function initializeMessagesPage() {
   const mainContent = document.querySelector("main");
   const newMessageForm = document.getElementById("newMessageForm");
   const attachFileButton = document.getElementById("attachFileButton");
+  const hasSeenSwipeHint = localStorage.getItem("hasSeenSwipeHint") === "true";
 
   // Function to open the messages page
   function openMessagesPage() {
@@ -1860,6 +1873,14 @@ function initializeMessagesPage() {
 
     // Render the message list when the page is opened
     renderMessageList();
+
+    // Show swipe hint if user hasn't seen it before
+    if (!hasSeenSwipeHint && "ontouchstart" in window) {
+      setTimeout(() => {
+        showToast("Swipe left on messages for actions", "info", 5000);
+        localStorage.setItem("hasSeenSwipeHint", "true");
+      }, 1500);
+    }
   }
 
   // Event listener for messages nav link
@@ -2109,7 +2130,28 @@ function updateUnreadMessageCount() {
   }
 }
 
-// Global function to render messages that can be called directly from HTML
+// Function to update the archived message count
+function updateArchivedMessageCount() {
+  const archivedMessages = messages.filter((msg) => msg.isArchived).length;
+  console.log(`Updating archived count to: ${archivedMessages}`);
+
+  // Update the badge in the archived tab
+  const archivedCountBadge = document.getElementById("archivedCount");
+  if (archivedCountBadge) {
+    if (archivedMessages > 0) {
+      archivedCountBadge.textContent = archivedMessages;
+      archivedCountBadge.classList.remove("hidden");
+      console.log("Updated archived badge");
+    } else {
+      archivedCountBadge.classList.add("hidden");
+      console.log("Hid archived badge");
+    }
+  } else {
+    console.log("Archived badge not found");
+  }
+}
+
+// Function to render messages that can be called directly from HTML
 function renderMessageList() {
   // Get the message list container
   const messageList = document.getElementById("messageList");
@@ -2155,11 +2197,13 @@ function renderMessageList() {
       });
     }
 
-    // Create message HTML with message ID as data attribute
+    // Create message HTML with message ID as data attribute and support for swipe actions
     const messageHTML = `
       <div class="card p-4 hover:bg-[rgba(255,255,255,0.05)] cursor-pointer transition-colors message-item ${
         message.isRead ? "" : "unread"
-      } message-priority-${message.priority}" data-message-id="${message.id}">
+      } message-priority-${message.priority} ${
+      message.isArchived ? "archived" : ""
+    } relative" data-message-id="${message.id}">
         <div class="flex justify-between items-start mb-2">
           <div class="flex items-center">
             <div class="relative">
@@ -2174,9 +2218,19 @@ function renderMessageList() {
             </div>
             <div>
               <h3 class="font-semibold text-white">${message.sender.name}</h3>
-              <p class="text-xs text-gray-400">Room ${
-                message.sender.room || ""
-              } ${message.sender.role ? `• ${message.sender.role}` : ""}</p>
+              <p class="text-xs text-gray-400">
+                ${
+                  message.sender.id === 0
+                    ? `To: ${message.recipient.name}${
+                        message.recipient.room
+                          ? ` • Room ${message.recipient.room}`
+                          : ""
+                      }`
+                    : `Room ${message.sender.room || ""} ${
+                        message.sender.role ? `• ${message.sender.role}` : ""
+                      }`
+                }
+              </p>
             </div>
           </div>
           <div class="text-right flex-shrink-0">
@@ -2196,19 +2250,19 @@ function renderMessageList() {
         </div>
         <div class="flex justify-between items-center mt-3">
           <span class="${getBadgeClass(message.tag)}">${message.tag}</span>
-          <div class="flex space-x-2">
+          <div class="prevent-message-click">
             <button class="p-1 text-gray-400 hover:text-white">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </button>
-            <button class="p-1 text-gray-400 hover:text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-              </svg>
-            </button>
           </div>
         </div>
+        ${
+          message.isArchived
+            ? `<div class="absolute top-0 right-0 bg-blue-500 text-xs text-white px-2 py-1 rounded-bl-md archive-badge">Archived</div>`
+            : ""
+        }
       </div>
     `;
 
@@ -2216,11 +2270,26 @@ function renderMessageList() {
     messageList.innerHTML += messageHTML;
   });
 
+  // After rendering, add event listeners to prevent click propagation on action buttons
+  document
+    .querySelectorAll(".prevent-message-click")
+    .forEach((actionContainer) => {
+      actionContainer.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+    });
+
   // Attach event listeners to message items
   attachMessageEventListeners();
 
+  // Set up swipe functionality
+  setupMessageSwipeEvents();
+
   // Update the unread count
   updateUnreadMessageCount();
+
+  // Update the archived count
+  updateArchivedMessageCount();
 
   // Apply current active tab filter
   applyActiveTabFilter();
@@ -2238,13 +2307,44 @@ function attachMessageEventListeners() {
     `Attaching event listeners to ${messageItems.length} message items`
   );
 
-  messageItems.forEach((item, index) => {
+  messageItems.forEach((item) => {
     // Remove existing event listeners first to prevent duplicates
     const newItem = item.cloneNode(true);
     item.parentNode.replaceChild(newItem, item);
 
-    // Add new event listeners
-    newItem.addEventListener("click", () => {
+    // Add new event listeners - only for clicking on message content area
+    newItem.addEventListener("click", (e) => {
+      // Skip if clicked on action buttons, menu or swipe areas
+      if (
+        e.target.closest(".message-options-btn") ||
+        e.target.closest(".message-actions-menu") ||
+        e.target.closest(".swipe-actions")
+      ) {
+        return;
+      }
+
+      // Additionally check if click was on any button element or SVG
+      if (
+        e.target.tagName.toLowerCase() === "button" ||
+        e.target.tagName.toLowerCase() === "svg" ||
+        e.target.tagName.toLowerCase() === "path"
+      ) {
+        return;
+      }
+
+      // Show swipe hint animation using the CSS animation
+      if (!newItem.querySelector(".swipe-actions")) {
+        newItem.classList.add("swipe-hint");
+
+        // Show toast guidance the first time
+        showSwipeHintToast();
+
+        // Remove the animation class after it finishes
+        setTimeout(() => {
+          newItem.classList.remove("swipe-hint");
+        }, 800);
+      }
+
       // Mark as read
       const wasUnread = newItem.classList.contains("unread");
       console.log(`Message clicked, was unread: ${wasUnread}`);
@@ -2315,12 +2415,16 @@ function applyActiveTabFilter() {
     const tabType = activeTab.getAttribute("data-tab");
     const messageItems = document.querySelectorAll(".message-item");
 
-    // No need to filter if "all" is selected
-    if (tabType === "all") return;
-
     // Apply filtering based on the active tab
     messageItems.forEach((item) => {
-      if (tabType === "unread" && item.classList.contains("unread")) {
+      if (tabType === "all") {
+        // Show all except archived
+        if (item.classList.contains("archived")) {
+          item.classList.add("hidden");
+        } else {
+          item.classList.remove("hidden");
+        }
+      } else if (tabType === "unread" && item.classList.contains("unread")) {
         item.classList.remove("hidden");
       } else if (
         tabType === "urgent" &&
@@ -2477,3 +2581,301 @@ function dismissToast(id) {
 
 // Initialize the app
 init();
+
+// Function to handle message actions (delete, archive)
+function handleMessageAction(messageId, action) {
+  const messageIndex = messages.findIndex((m) => m.id === messageId);
+  if (messageIndex === -1) {
+    console.log(`Message with ID ${messageId} not found`);
+    return;
+  }
+
+  // Get message element for animations
+  const messageElement = document.querySelector(
+    `.message-item[data-message-id="${messageId}"]`
+  );
+
+  switch (action) {
+    case "delete":
+      if (messageElement) {
+        // Add deletion animation
+        messageElement.style.transition = "all 0.3s ease";
+        messageElement.style.opacity = "0";
+        messageElement.style.height = messageElement.offsetHeight + "px";
+        messageElement.style.marginTop = "0";
+        messageElement.style.marginBottom = "0";
+
+        setTimeout(() => {
+          messageElement.style.height = "0";
+          messageElement.style.padding = "0";
+
+          // Remove message from array and render after animation
+          setTimeout(() => {
+            messages.splice(messageIndex, 1);
+            renderMessageList();
+            showToast("Message deleted", "success");
+          }, 300);
+        }, 100);
+      } else {
+        // If element not found, just remove it immediately
+        messages.splice(messageIndex, 1);
+        renderMessageList();
+        showToast("Message deleted", "success");
+      }
+      break;
+
+    case "archive":
+      // Mark message as archived with animation
+      messages[messageIndex].isArchived = true;
+
+      if (messageElement) {
+        // Add archive badge with animation
+        const archiveBadge = document.createElement("div");
+        archiveBadge.className =
+          "absolute top-0 right-0 bg-blue-500 text-xs text-white px-2 py-1 rounded-bl-md archive-badge";
+        archiveBadge.textContent = "Archived";
+        messageElement.appendChild(archiveBadge);
+
+        // Hide the swipe actions first
+        hideSwipeActions(messageElement);
+
+        // Then update the message list
+        setTimeout(() => {
+          renderMessageList();
+          showToast("Message archived", "success");
+        }, 500);
+      } else {
+        renderMessageList();
+        showToast("Message archived", "success");
+      }
+      break;
+
+    case "unarchive":
+      // Remove archived flag with animation
+      messages[messageIndex].isArchived = false;
+
+      if (messageElement) {
+        // Hide the archive badge with animation
+        const archiveBadge = messageElement.querySelector(".archive-badge");
+        if (archiveBadge) {
+          archiveBadge.style.transition =
+            "transform 0.3s ease, opacity 0.3s ease";
+          archiveBadge.style.transform = "translateY(-100%)";
+          archiveBadge.style.opacity = "0";
+        }
+
+        // Hide the swipe actions
+        hideSwipeActions(messageElement);
+
+        // Update the message list after animation
+        setTimeout(() => {
+          renderMessageList();
+          showToast("Message removed from archive", "success");
+        }, 500);
+      } else {
+        renderMessageList();
+        showToast("Message removed from archive", "success");
+      }
+      break;
+
+    default:
+      console.log(`Unknown action: ${action}`);
+      return;
+  }
+}
+
+// Function to set up touch events for message swiping
+function setupMessageSwipeEvents() {
+  const messageItems = document.querySelectorAll(".message-item");
+
+  messageItems.forEach((item) => {
+    let startX = 0;
+    let currentX = 0;
+    let isSwiping = false;
+    const swipeThreshold = 100; // Minimum distance to trigger swipe action
+
+    item.addEventListener("touchstart", (e) => {
+      // Only start swiping if the touch is not on a button or action element
+      if (
+        e.target.closest(".message-options-btn") ||
+        e.target.closest(".message-actions-menu") ||
+        e.target.closest(".swipe-actions") ||
+        e.target.tagName.toLowerCase() === "button" ||
+        e.target.tagName.toLowerCase() === "svg" ||
+        e.target.tagName.toLowerCase() === "path"
+      ) {
+        return;
+      }
+
+      startX = e.touches[0].clientX;
+      currentX = startX;
+      isSwiping = true;
+
+      // Remove transition temporarily for responsive swiping
+      item.style.transition = "";
+    });
+
+    item.addEventListener("touchmove", (e) => {
+      if (!isSwiping) return;
+
+      currentX = e.touches[0].clientX;
+      const diffX = currentX - startX;
+
+      // Add appropriate swiping class based on direction
+      if (diffX < 0) {
+        item.classList.add("swiping-left");
+        item.classList.remove("swiping-right");
+      } else if (diffX > 0) {
+        item.classList.add("swiping-right");
+        item.classList.remove("swiping-left");
+      }
+
+      // If swiping right and actions are visible, hide them
+      if (diffX > 0 && item.querySelector(".swipe-actions")) {
+        const translateX = Math.min(diffX, 130); // Limit how far right they can swipe
+        item.style.transform = `translateX(${translateX - 130}px)`;
+        return;
+      }
+
+      // Only allow left swipe (negative diffX) when no actions are visible
+      if (diffX < 0 && !item.querySelector(".swipe-actions")) {
+        // Limit the swipe to a maximum distance with resistance effect
+        const translateX = Math.max(diffX * 0.9, -150); // Add a bit of resistance
+        item.style.transform = `translateX(${translateX}px)`;
+      }
+    });
+
+    item.addEventListener("touchend", (e) => {
+      if (!isSwiping) return;
+
+      const diffX = currentX - startX;
+      const hasSwipeActions = item.querySelector(".swipe-actions");
+
+      // Restore transition for smooth animation at end of swipe
+      item.style.transition = "transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)";
+
+      // If swiping right and actions are visible, hide them if swiped enough
+      if (diffX > 30 && hasSwipeActions) {
+        hideSwipeActions(item);
+      }
+      // If swiping left and no actions are visible, show them if swiped enough
+      else if (diffX < -swipeThreshold && !hasSwipeActions) {
+        showSwipeActions(item);
+      }
+      // Otherwise reset to initial position
+      else {
+        if (hasSwipeActions) {
+          item.style.transform = "translateX(-130px)";
+        } else {
+          item.style.transform = "translateX(0)";
+        }
+      }
+
+      // Remove swiping classes after animation completes
+      setTimeout(() => {
+        item.classList.remove("swiping-left", "swiping-right");
+      }, 300);
+
+      isSwiping = false;
+    });
+  });
+
+  // Hide swipe actions when clicking outside
+  document.addEventListener("click", function (e) {
+    if (
+      !e.target.closest(".swipe-actions") &&
+      !e.target.closest(".message-options-btn")
+    ) {
+      const allMessageItems = document.querySelectorAll(".message-item");
+      allMessageItems.forEach((item) => {
+        if (item.querySelector(".swipe-actions")) {
+          hideSwipeActions(item);
+        }
+      });
+    }
+  });
+}
+
+// Function to hide swipe actions
+function hideSwipeActions(messageItem) {
+  messageItem.style.transition =
+    "transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)";
+  messageItem.style.transform = "translateX(0)";
+
+  // Remove the swipe actions after animation
+  setTimeout(() => {
+    const swipeActions = messageItem.querySelector(".swipe-actions");
+    if (swipeActions && swipeActions.parentNode === messageItem) {
+      // Fade out animation before removal
+      swipeActions.style.opacity = "0";
+      swipeActions.style.transition = "opacity 0.2s ease";
+
+      setTimeout(() => {
+        if (swipeActions.parentNode === messageItem) {
+          messageItem.removeChild(swipeActions);
+        }
+      }, 200);
+    }
+  }, 300);
+}
+
+// Function to show swipe actions
+function showSwipeActions(messageItem) {
+  // Check if actions are already added
+  if (messageItem.querySelector(".swipe-actions")) {
+    return;
+  }
+
+  // Add transition for smooth animation
+  messageItem.style.transition =
+    "transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)";
+  messageItem.style.transform = "translateX(-130px)";
+
+  // Get message ID
+  const messageId = parseInt(messageItem.getAttribute("data-message-id"));
+  if (isNaN(messageId)) return;
+
+  // Create action buttons container
+  const actionsContainer = document.createElement("div");
+  actionsContainer.className =
+    "swipe-actions absolute right-0 top-0 bottom-0 flex h-full";
+
+  // Get message to check if archived
+  const message = messages.find((m) => m.id === messageId);
+  if (!message) return;
+
+  const isArchived = message.isArchived;
+
+  // Create actions
+  actionsContainer.innerHTML = `
+    <button class="h-full w-16 flex items-center justify-center ${
+      isArchived ? "bg-green-600" : "bg-blue-600"
+    }" 
+            onclick="handleMessageAction(${messageId}, '${
+    isArchived ? "unarchive" : "archive"
+  }')">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+      </svg>
+    </button>
+    <button class="h-full w-16 flex items-center justify-center bg-red-600" 
+            onclick="handleMessageAction(${messageId}, 'delete')">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
+    </button>
+  `;
+
+  // Add actions to the message item
+  messageItem.appendChild(actionsContainer);
+
+  // Prevent action buttons from triggering message click events
+  const actionButtons = actionsContainer.querySelectorAll("button");
+  actionButtons.forEach((button) => {
+    button.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+  });
+}
