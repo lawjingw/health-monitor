@@ -351,6 +351,7 @@ function init() {
 
   // Start continuous monitoring
   startContinuousMonitoring();
+  initializeMessagesPage(); // Add messages page initialization
 }
 
 // Initialize Chart.js charts
@@ -1720,6 +1721,160 @@ function updateThemeToggleIcons(theme) {
       }
     }
   });
+}
+
+// Message page functionality
+function initializeMessagesPage() {
+  const messagesNavLink = document.getElementById("messagesNavLink");
+  const messagesPage = document.getElementById("messagesPage");
+  const mainContent = document.querySelector("main");
+
+  // Function to open the messages page
+  function openMessagesPage() {
+    // Hide all other pages
+    mainContent.classList.add("hidden");
+    document.querySelectorAll(".page").forEach((page) => {
+      page.classList.add("hidden");
+    });
+
+    // Show messages page
+    messagesPage.classList.remove("hidden");
+
+    // Add active class to messages nav link
+    document.querySelectorAll("nav a").forEach((navLink) => {
+      navLink.classList.remove("text-white");
+      navLink.classList.add("text-gray-400");
+    });
+    messagesNavLink.classList.remove("text-gray-400");
+    messagesNavLink.classList.add("text-white");
+  }
+
+  // Event listener for messages nav link
+  if (messagesNavLink) {
+    messagesNavLink.addEventListener("click", openMessagesPage);
+  }
+
+  // Handle message tab switching
+  const messageTabs = document.querySelectorAll(".message-tab");
+  const messageItems = document.querySelectorAll(".message-item");
+
+  messageTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      // Remove active class from all tabs
+      messageTabs.forEach((t) => {
+        t.classList.remove(
+          "active",
+          "text-white",
+          "border-[#c2f542]",
+          "border-b-2"
+        );
+        t.classList.add("text-gray-400");
+      });
+
+      // Add active class to clicked tab
+      tab.classList.add(
+        "active",
+        "text-white",
+        "border-b-2",
+        "border-[#c2f542]"
+      );
+      tab.classList.remove("text-gray-400");
+
+      // Filter messages based on tab
+      const tabType = tab.getAttribute("data-tab");
+      messageItems.forEach((item) => {
+        if (tabType === "all") {
+          item.classList.remove("hidden");
+        } else if (tabType === "unread" && item.classList.contains("unread")) {
+          item.classList.remove("hidden");
+        } else if (
+          tabType === "urgent" &&
+          item.querySelector(".bg-red-500\\/20")
+        ) {
+          item.classList.remove("hidden");
+        } else if (
+          tabType === "archived" &&
+          item.classList.contains("archived")
+        ) {
+          item.classList.remove("hidden");
+        } else {
+          item.classList.add("hidden");
+        }
+      });
+    });
+  });
+
+  // Make message items clickable to mark as read
+  messageItems.forEach((item) => {
+    item.addEventListener("click", () => {
+      // Mark as read when clicked
+      item.classList.remove("unread");
+
+      // Update the message status icon (green dot)
+      const statusIcon = item.querySelector(".absolute .bg-\\[\\#c2f542\\]");
+      if (statusIcon) {
+        statusIcon.remove();
+      }
+
+      // Remove unread count badge
+      const unreadBadge = item.querySelector(".ml-2.bg-red-500");
+      if (unreadBadge) {
+        unreadBadge.remove();
+      }
+
+      // Update the total unread count in the navigation
+      updateUnreadMessageCount();
+    });
+  });
+
+  // Function to update the unread message count in navigation
+  function updateUnreadMessageCount() {
+    const unreadMessages = document.querySelectorAll(
+      ".message-item.unread"
+    ).length;
+    const unreadCountBadge = document.querySelector(
+      "#messagesNavLink .bg-red-500"
+    );
+
+    if (unreadCountBadge) {
+      if (unreadMessages > 0) {
+        unreadCountBadge.textContent = unreadMessages;
+        unreadCountBadge.classList.remove("hidden");
+      } else {
+        unreadCountBadge.classList.add("hidden");
+      }
+    }
+
+    // Also update the count in the unread tab
+    const unreadTabBadge = document.querySelector(
+      '.message-tab[data-tab="unread"] .bg-red-500'
+    );
+    if (unreadTabBadge) {
+      unreadTabBadge.textContent = unreadMessages;
+      if (unreadMessages === 0) {
+        unreadTabBadge.classList.add("hidden");
+      } else {
+        unreadTabBadge.classList.remove("hidden");
+      }
+    }
+  }
+
+  // Home link to go back to main dashboard
+  const homeLink = document.getElementById("homeNavLink");
+  if (homeLink) {
+    homeLink.addEventListener("click", () => {
+      messagesPage.classList.add("hidden");
+      mainContent.classList.remove("hidden");
+
+      // Update nav link active states
+      document.querySelectorAll("nav a").forEach((navLink) => {
+        navLink.classList.remove("text-white");
+        navLink.classList.add("text-gray-400");
+      });
+      homeLink.classList.remove("text-gray-400");
+      homeLink.classList.add("text-white");
+    });
+  }
 }
 
 // Initialize the app
