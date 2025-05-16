@@ -884,11 +884,21 @@ function closeModal() {
 // Render patient list with updated styling
 function renderPatientList() {
   const filteredPatients = filterAndSortPatients();
+  const currentTheme = document.documentElement.classList.contains("light")
+    ? "light"
+    : "dark";
+
+  // Define theme-appropriate text colors
+  const primaryTextColor =
+    currentTheme === "dark" ? "text-white" : "text-gray-900";
+  const secondaryTextColor =
+    currentTheme === "dark" ? "text-gray-400" : "text-gray-600";
+  const dangerColor = currentTheme === "dark" ? "text-red-500" : "text-red-600";
 
   patientList.innerHTML = filteredPatients
     .map(
       (patient) => `
-    <div class="card patient-card p-4 cursor-pointer hover:ring-2 hover:ring-[#c2f542] transition-all ${
+    <div class="card patient-card p-4 cursor-pointer hover:ring-2 hover:ring-[var(--accent-color)] transition-all ${
       patient.id === currentPatientId ? "selected" : ""
     }"
          onclick="selectPatient(${patient.id})">
@@ -899,41 +909,43 @@ function renderPatientList() {
       }" class="w-12 h-12 rounded-full">
           <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full ${
             patient.isAbnormal ? "bg-red-500" : "neon-bg"
-          } ring-2 ring-[#1a1a1a]"></span>
+          } ring-2 ring-[var(--bg-primary)]"></span>
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex justify-between items-start">
-            <h3 class="text-lg font-semibold text-white truncate">${
-              patient.name
-            }</h3>
-            <span class="text-sm text-gray-400">Room ${patient.room}</span>
+            <h3 class="text-lg font-semibold ${primaryTextColor} truncate">${
+        patient.name
+      }</h3>
+            <span class="${secondaryTextColor} text-sm">Room ${
+        patient.room
+      }</span>
           </div>
           <div class="mt-1 flex items-center space-x-4 text-sm">
-            <span class="text-gray-400">HR: <span class="${
-              patient.vitals.heartRate < patient.safeRanges.heartRate.min ||
-              patient.vitals.heartRate > patient.safeRanges.heartRate.max
-                ? "text-red-500"
-                : "text-white"
-            }">${Math.round(patient.vitals.heartRate)}</span></span>
-            <span class="text-gray-400">BP: <span class="${
-              patient.vitals.bloodPressure.systolic <
-                patient.safeRanges.bloodPressure.systolic.min ||
-              patient.vitals.bloodPressure.systolic >
-                patient.safeRanges.bloodPressure.systolic.max ||
-              patient.vitals.bloodPressure.diastolic <
-                patient.safeRanges.bloodPressure.diastolic.min ||
-              patient.vitals.bloodPressure.diastolic >
-                patient.safeRanges.bloodPressure.diastolic.max
-                ? "text-red-500"
-                : "text-white"
-            }">${Math.round(
-        patient.vitals.bloodPressure.systolic
-      )}/${Math.round(patient.vitals.bloodPressure.diastolic)}</span></span>
-            <span class="text-gray-400">O2: <span class="${
-              patient.vitals.oxygenLevel < patient.safeRanges.oxygenLevel.min
-                ? "text-red-500"
-                : "text-white"
-            }">${Math.round(patient.vitals.oxygenLevel)}%</span></span>
+            <span class="${secondaryTextColor}">HR: <span class="${
+        patient.vitals.heartRate < patient.safeRanges.heartRate.min ||
+        patient.vitals.heartRate > patient.safeRanges.heartRate.max
+          ? dangerColor
+          : primaryTextColor
+      }">${Math.round(patient.vitals.heartRate)}</span></span>
+            <span class="${secondaryTextColor}">BP: <span class="${
+        patient.vitals.bloodPressure.systolic <
+          patient.safeRanges.bloodPressure.systolic.min ||
+        patient.vitals.bloodPressure.systolic >
+          patient.safeRanges.bloodPressure.systolic.max ||
+        patient.vitals.bloodPressure.diastolic <
+          patient.safeRanges.bloodPressure.diastolic.min ||
+        patient.vitals.bloodPressure.diastolic >
+          patient.safeRanges.bloodPressure.diastolic.max
+          ? dangerColor
+          : primaryTextColor
+      }">${Math.round(patient.vitals.bloodPressure.systolic)}/${Math.round(
+        patient.vitals.bloodPressure.diastolic
+      )}</span></span>
+            <span class="${secondaryTextColor}">O2: <span class="${
+        patient.vitals.oxygenLevel < patient.safeRanges.oxygenLevel.min
+          ? dangerColor
+          : primaryTextColor
+      }">${Math.round(patient.vitals.oxygenLevel)}%</span></span>
           </div>
         </div>
       </div>
@@ -980,14 +992,21 @@ function selectPatient(patientId) {
 
 // Update vital signs display
 function updateVitalSigns(patient) {
+  const currentTheme = document.documentElement.classList.contains("light")
+    ? "light"
+    : "dark";
+  const primaryTextColor =
+    currentTheme === "dark" ? "text-white" : "text-gray-900";
+  const dangerColor = currentTheme === "dark" ? "text-red-500" : "text-red-600";
+
   document.getElementById("currentHeartRate").textContent = Math.round(
     patient.vitals.heartRate
   );
   document.getElementById("currentHeartRate").className = `text-2xl font-bold ${
     patient.vitals.heartRate < patient.safeRanges.heartRate.min ||
     patient.vitals.heartRate > patient.safeRanges.heartRate.max
-      ? "text-red-500"
-      : "text-white"
+      ? dangerColor
+      : primaryTextColor
   }`;
 
   document.getElementById("currentBP").textContent = `${Math.round(
@@ -1002,8 +1021,8 @@ function updateVitalSigns(patient) {
       patient.safeRanges.bloodPressure.diastolic.min ||
     patient.vitals.bloodPressure.diastolic >
       patient.safeRanges.bloodPressure.diastolic.max
-      ? "text-red-500"
-      : "text-white"
+      ? dangerColor
+      : primaryTextColor
   }`;
 
   document.getElementById("currentO2").textContent = Math.round(
@@ -1011,8 +1030,8 @@ function updateVitalSigns(patient) {
   );
   document.getElementById("currentO2").className = `text-2xl font-bold ${
     patient.vitals.oxygenLevel < patient.safeRanges.oxygenLevel.min
-      ? "text-red-500"
-      : "text-white"
+      ? dangerColor
+      : primaryTextColor
   }`;
 
   document.getElementById("lastUpdated").textContent =
@@ -1107,6 +1126,17 @@ function toggleFilter(filter) {
 
 // Create mobile patient card
 function createMobilePatientCard(patient) {
+  const currentTheme = document.documentElement.classList.contains("light")
+    ? "light"
+    : "dark";
+
+  // Define theme-appropriate text colors
+  const primaryTextColor =
+    currentTheme === "dark" ? "text-white" : "text-gray-900";
+  const secondaryTextColor =
+    currentTheme === "dark" ? "text-gray-400" : "text-gray-600";
+  const dangerColor = currentTheme === "dark" ? "text-red-500" : "text-red-600";
+
   return `
     <div class="card p-3 cursor-pointer" onclick="selectPatient(${patient.id})">
       <div class="flex items-center space-x-3">
@@ -1116,41 +1146,43 @@ function createMobilePatientCard(patient) {
   }" class="w-10 h-10 rounded-full">
           <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full ${
             patient.isAbnormal ? "bg-red-500" : "neon-bg"
-          } ring-2 ring-[#1a1a1a]"></span>
+          } ring-2 ring-[var(--bg-primary)]"></span>
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex justify-between items-start">
-            <h3 class="text-base font-semibold text-white truncate">${
-              patient.name
-            }</h3>
-            <span class="text-sm text-gray-400">Room ${patient.room}</span>
+            <h3 class="text-base font-semibold ${primaryTextColor} truncate">${
+    patient.name
+  }</h3>
+            <span class="${secondaryTextColor} text-sm">Room ${
+    patient.room
+  }</span>
           </div>
           <div class="mt-1 flex items-center space-x-3 text-sm">
-            <span class="text-gray-400">HR: <span class="${
-              patient.vitals.heartRate < patient.safeRanges.heartRate.min ||
-              patient.vitals.heartRate > patient.safeRanges.heartRate.max
-                ? "text-red-500"
-                : "text-white"
-            }">${Math.round(patient.vitals.heartRate)}</span></span>
-            <span class="text-gray-400">BP: <span class="${
-              patient.vitals.bloodPressure.systolic <
-                patient.safeRanges.bloodPressure.systolic.min ||
-              patient.vitals.bloodPressure.systolic >
-                patient.safeRanges.bloodPressure.systolic.max ||
-              patient.vitals.bloodPressure.diastolic <
-                patient.safeRanges.bloodPressure.diastolic.min ||
-              patient.vitals.bloodPressure.diastolic >
-                patient.safeRanges.bloodPressure.diastolic.max
-                ? "text-red-500"
-                : "text-white"
-            }">${Math.round(
-    patient.vitals.bloodPressure.systolic
-  )}/${Math.round(patient.vitals.bloodPressure.diastolic)}</span></span>
-            <span class="text-gray-400">O2: <span class="${
-              patient.vitals.oxygenLevel < patient.safeRanges.oxygenLevel.min
-                ? "text-red-500"
-                : "text-white"
-            }">${Math.round(patient.vitals.oxygenLevel)}%</span></span>
+            <span class="${secondaryTextColor}">HR: <span class="${
+    patient.vitals.heartRate < patient.safeRanges.heartRate.min ||
+    patient.vitals.heartRate > patient.safeRanges.heartRate.max
+      ? dangerColor
+      : primaryTextColor
+  }">${Math.round(patient.vitals.heartRate)}</span></span>
+            <span class="${secondaryTextColor}">BP: <span class="${
+    patient.vitals.bloodPressure.systolic <
+      patient.safeRanges.bloodPressure.systolic.min ||
+    patient.vitals.bloodPressure.systolic >
+      patient.safeRanges.bloodPressure.systolic.max ||
+    patient.vitals.bloodPressure.diastolic <
+      patient.safeRanges.bloodPressure.diastolic.min ||
+    patient.vitals.bloodPressure.diastolic >
+      patient.safeRanges.bloodPressure.diastolic.max
+      ? dangerColor
+      : primaryTextColor
+  }">${Math.round(patient.vitals.bloodPressure.systolic)}/${Math.round(
+    patient.vitals.bloodPressure.diastolic
+  )}</span></span>
+            <span class="${secondaryTextColor}">O2: <span class="${
+    patient.vitals.oxygenLevel < patient.safeRanges.oxygenLevel.min
+      ? dangerColor
+      : primaryTextColor
+  }">${Math.round(patient.vitals.oxygenLevel)}%</span></span>
           </div>
         </div>
       </div>
@@ -1357,27 +1389,45 @@ function updateAlertCount() {
 function updateAlertList() {
   const alertList = document.getElementById("alertList");
   const mobileAlertList = document.getElementById("mobileAlertList");
+  const currentTheme = document.documentElement.classList.contains("light")
+    ? "light"
+    : "dark";
+
+  // Define theme-appropriate text colors
+  const primaryTextColor =
+    currentTheme === "dark" ? "text-white" : "text-gray-900";
+  const secondaryTextColor =
+    currentTheme === "dark" ? "text-gray-400" : "text-gray-600";
+  const mutedTextColor =
+    currentTheme === "dark" ? "text-gray-500" : "text-gray-400";
+  const alertTextColor =
+    currentTheme === "dark" ? "text-red-400" : "text-red-500";
+  const bgColor =
+    currentTheme === "dark"
+      ? "bg-[rgba(255,255,255,0.05)]"
+      : "bg-[rgba(0,0,0,0.05)]";
+
   const alertContent = Array.from(activeAlerts.entries())
     .map(([patientId, alert]) => {
       const patient = patients.find((p) => p.id === patientId);
       return `
-        <div class="p-3 rounded-lg bg-[rgba(255,255,255,0.05)]">
+        <div class="p-3 rounded-lg ${bgColor}">
           <div class="flex justify-between items-start">
             <div>
-              <p class="text-white font-medium">${patient.name}</p>
-              <p class="text-gray-400 text-sm">Room ${patient.room}</p>
+              <p class="${primaryTextColor} font-medium">${patient.name}</p>
+              <p class="${secondaryTextColor} text-sm">Room ${patient.room}</p>
             </div>
             <button
               onclick="dismissPatientAlert(${patientId})"
-              class="text-gray-400 hover:text-white"
+              class="${secondaryTextColor} hover:${primaryTextColor}"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <p class="text-red-400 text-sm mt-2">${alert}</p>
-          <p class="text-gray-500 text-xs mt-1">${new Date().toLocaleTimeString()}</p>
+          <p class="${alertTextColor} text-sm mt-2">${alert}</p>
+          <p class="${mutedTextColor} text-xs mt-1">${new Date().toLocaleTimeString()}</p>
         </div>
       `;
     })
@@ -1629,11 +1679,21 @@ function setTheme(theme) {
   // Update toggle button icons
   updateThemeToggleIcons(theme);
 
+  // Re-render patient list with correct colors
+  renderPatientList();
+
+  // Update mobile patient list
+  updateMobilePatientList();
+
+  // Update alert list with correct colors
+  updateAlertList();
+
   // Re-render charts with new theme colors if needed
   if (currentPatientId) {
     const patient = patients.find((p) => p.id === currentPatientId);
     if (patient) {
       updateCharts(patient);
+      updateVitalSigns(patient);
     }
   }
 }

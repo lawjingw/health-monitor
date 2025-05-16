@@ -21,8 +21,8 @@
 
 /* Light theme */
 .light {
-  --bg-primary: #f5f7fa;
-  --bg-secondary: #ffffff;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f7fa;
   --bg-tertiary: rgba(255, 255, 255, 0.9);
   --text-primary: #121212;
   --text-secondary: rgba(0, 0, 0, 0.7);
