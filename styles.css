@@ -213,7 +213,7 @@ h6 {
 
 .quick-action-btn.active {
   background-color: var(--accent-color);
-  color: #ffffff;
+  color: var(--bg-primary);
 }
 
 /* Chrome, Safari, Edge, Opera */
