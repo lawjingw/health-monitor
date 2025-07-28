@@ -691,3 +691,126 @@ input[type="radio"]:focus {
   animation: swipeHintShine 0.8s cubic-bezier(0.3, 0.1, 0.3, 1);
   pointer-events: none;
 }
+
+/* Adaptive text color utilities for better contrast in both light and dark modes */
+.text-adaptive-primary {
+  color: var(--text-primary);
+}
+
+.text-adaptive-secondary {
+  color: var(--text-secondary);
+}
+
+.text-adaptive-muted {
+  color: var(--text-muted);
+}
+
+/* Adaptive background and border utilities */
+.bg-adaptive-input {
+  background: var(--input-bg);
+}
+
+.border-adaptive {
+  border-color: var(--input-border);
+}
+
+.bg-adaptive-secondary {
+  background: var(--bg-secondary);
+}
+
+/* Adaptive select styling */
+.select-adaptive {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-primary);
+}
+
+.select-adaptive option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Footer adaptive styling */
+.footer-adaptive {
+  border-color: var(--border-color);
+}
+
+.footer-adaptive .text-gray-400 {
+  color: var(--text-muted) !important;
+}
+
+.footer-adaptive .hover\:text-white:hover {
+  color: var(--text-primary) !important;
+}
+
+/* Navigation adaptive styling */
+.nav-adaptive .text-gray-300 {
+  color: var(--text-secondary) !important;
+}
+
+.nav-adaptive .hover\:text-white:hover {
+  color: var(--text-primary) !important;
+}
+
+.nav-adaptive .text-white {
+  color: var(--text-primary) !important;
+}
+
+.nav-adaptive .text-gray-400 {
+  color: var(--text-muted) !important;
+}
+
+/* Header adaptive styling */
+.header-adaptive {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.header-adaptive .bg-\[rgba\(41\,40\,47\,255\)\] {
+  background: var(--bg-secondary) !important;
+}
+
+.header-adaptive .border-gray-800 {
+  border-color: var(--border-color) !important;
+}
+
+/* Dropdown adaptive styling */
+.header-adaptive .shadow-lg {
+  box-shadow: var(--card-shadow) !important;
+}
+
+/* Light mode specific header overrides */
+.light .header-adaptive {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.light .nav-adaptive .text-gray-300 {
+  color: var(--text-secondary) !important;
+}
+
+.light .nav-adaptive .text-white {
+  color: var(--text-primary) !important;
+}
+
+.light .nav-adaptive .text-gray-400 {
+  color: var(--text-muted) !important;
+}
+
+/* Better button and interactive element contrast in light mode */
+.light .bg-\[rgba\(255\,255\,255\,0\.1\)\] {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+.light .border-\[rgba\(255\,255\,255\,0\.2\)\] {
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.light .hover\:bg-\[rgba\(255\,255\,255\,0\.1\)\]:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Enhanced message page styling */
+.light #messagesPage .text-white {
+  color: var(--text-primary) !important;
+}
