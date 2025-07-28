@@ -362,8 +362,19 @@ function init() {
   );
 
   // Start continuous monitoring
+  // Start continuous monitoring
   startContinuousMonitoring();
   initializeMessagesPage(); // Add messages page initialization
+
+  // Add keyboard event listeners for modals
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      // Close any open modals
+      closeHelpModal();
+      closeSettingsModal();
+      closeNewMessageModal();
+    }
+  });
 }
 
 // Initialize Chart.js charts
@@ -1649,6 +1660,27 @@ function resetToDefaults() {
 
   // Recheck patient's vitals with default ranges
   checkVitalAlerts(patient);
+}
+
+// Help Modal Functions
+function openHelpModal() {
+  const modal = document.getElementById("helpModal");
+  modal.classList.remove("hidden");
+
+  // Focus the close button for accessibility
+  setTimeout(() => {
+    const closeButton = modal.querySelector(
+      'button[onclick="closeHelpModal()"]'
+    );
+    if (closeButton) {
+      closeButton.focus();
+    }
+  }, 100);
+}
+
+function closeHelpModal() {
+  const modal = document.getElementById("helpModal");
+  modal.classList.add("hidden");
 }
 
 // Theme management

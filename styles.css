@@ -379,7 +379,8 @@ input[type="radio"]:focus {
   }
 }
 
-#newMessageModal .absolute {
+#newMessageModal .absolute,
+#helpModal .absolute {
   animation: modalFadeIn 0.3s ease-out;
 }
 
@@ -813,4 +814,35 @@ input[type="radio"]:focus {
 /* Enhanced message page styling */
 .light #messagesPage .text-white {
   color: var(--text-primary) !important;
+}
+
+/* Modal adaptive styling */
+.bg-adaptive-secondary {
+  background: var(--bg-secondary) !important;
+}
+
+/* Adaptive input hover states */
+.bg-adaptive-input:hover {
+  background: var(--hover-bg) !important;
+}
+
+/* Button hover states for adaptive inputs */
+button.bg-adaptive-input:hover,
+button.hover\:bg-adaptive-input:hover {
+  background: var(--hover-bg) !important;
+}
+
+/* Light mode modal overrides */
+.light .bg-adaptive-input:hover,
+.light button.bg-adaptive-input:hover,
+.light button.hover\:bg-adaptive-input:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+.light .hover\:bg-\[rgba\(255\,255\,255\,0\.15\)\]:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+.light .hover\:bg-\[rgba\(255\,255\,255\,0\.2\)\]:hover {
+  background: rgba(0, 0, 0, 0.12) !important;
 }
