@@ -801,6 +801,91 @@ function setupEventListeners() {
       }
     }, 250);
   });
+
+  // Add event listeners for mobile navigation buttons
+  const reportsButton = document.getElementById("reportsNavButton");
+  const accountButton = document.getElementById("accountNavButton");
+
+  if (reportsButton) {
+    reportsButton.addEventListener("click", () => {
+      showToast("Reports button clicked", "info", 2000);
+    });
+  }
+
+  if (accountButton) {
+    accountButton.addEventListener("click", () => {
+      showToast("Account button clicked", "info", 2000);
+    });
+  }
+
+  // Add event listeners for desktop navigation buttons
+  const desktopHomeButton = document.getElementById("desktopHomeNavLink");
+  const desktopMessagesButton = document.getElementById(
+    "desktopMessagesNavLink"
+  );
+  const desktopReportsButton = document.getElementById(
+    "desktopReportsNavButton"
+  );
+
+  if (desktopHomeButton) {
+    desktopHomeButton.addEventListener("click", () => {
+      // Navigate to home - same behavior as mobile home button
+      const messagesPage = document.getElementById("messagesPage");
+      const mainContent = document.querySelector("main");
+
+      messagesPage.classList.add("hidden");
+      mainContent.classList.remove("hidden");
+
+      // Update active states
+      document.querySelectorAll("nav a").forEach((navLink) => {
+        navLink.classList.remove("text-white");
+        navLink.classList.add("text-gray-300");
+      });
+      desktopHomeButton.classList.remove("text-gray-300");
+      desktopHomeButton.classList.add("text-white");
+    });
+  }
+
+  if (desktopMessagesButton) {
+    desktopMessagesButton.addEventListener("click", () => {
+      // Navigate to messages page - same behavior as mobile messages button
+      const messagesPage = document.getElementById("messagesPage");
+      const mainContent = document.querySelector("main");
+
+      mainContent.classList.add("hidden");
+      document.querySelectorAll(".page").forEach((page) => {
+        page.classList.add("hidden");
+      });
+      messagesPage.classList.remove("hidden");
+
+      // Update active states
+      document.querySelectorAll("nav a").forEach((navLink) => {
+        navLink.classList.remove("text-white");
+        navLink.classList.add("text-gray-300");
+      });
+      desktopMessagesButton.classList.remove("text-gray-300");
+      desktopMessagesButton.classList.add("text-white");
+
+      // Render message list
+      if (typeof renderMessageList === "function") {
+        renderMessageList();
+      }
+    });
+  }
+
+  if (desktopReportsButton) {
+    desktopReportsButton.addEventListener("click", () => {
+      showToast("Reports button clicked", "info", 2000);
+    });
+  }
+
+  // Add event listener for profile button
+  const profileButton = document.getElementById("profileButton");
+  if (profileButton) {
+    profileButton.addEventListener("click", () => {
+      showToast("Profile button clicked", "info", 2000);
+    });
+  }
 }
 
 // Update charts with new data

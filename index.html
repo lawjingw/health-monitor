@@ -173,12 +173,21 @@
               >Health Monitor</a
             >
             <div class="flex space-x-6">
-              <a class="text-gray-300 hover:text-white font-medium"
-                >Dashboard</a
+              <a
+                id="desktopHomeNavLink"
+                class="text-white hover:text-white font-medium cursor-pointer"
+                >Home</a
               >
-              <a class="text-gray-300 hover:text-white font-medium">Patients</a>
-              <a class="text-gray-300 hover:text-white font-medium">Reports</a>
-              <a class="text-gray-300 hover:text-white font-medium">Settings</a>
+              <a
+                id="desktopMessagesNavLink"
+                class="text-gray-300 hover:text-white font-medium cursor-pointer"
+                >Messages</a
+              >
+              <a
+                id="desktopReportsNavButton"
+                class="text-gray-300 hover:text-white font-medium cursor-pointer"
+                >Reports</a
+              >
             </div>
           </div>
           <div class="flex items-center space-x-2">
@@ -265,7 +274,10 @@
               </div>
             </div>
 
-            <button class="text-gray-300 p-2 hover:text-white">
+            <button
+              id="profileButton"
+              class="text-gray-300 p-2 hover:text-white cursor-pointer"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-6 w-6"
@@ -720,7 +732,8 @@
           <span class="text-xs mt-1">Messages</span>
         </a>
         <a
-          class="flex flex-col items-center justify-center text-gray-400 hover:text-white"
+          id="reportsNavButton"
+          class="flex flex-col items-center justify-center text-gray-400 hover:text-white cursor-pointer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -739,7 +752,8 @@
           <span class="text-xs mt-1">Reports</span>
         </a>
         <a
-          class="flex flex-col items-center justify-center text-gray-400 hover:text-white"
+          id="accountNavButton"
+          class="flex flex-col items-center justify-center text-gray-400 hover:text-white cursor-pointer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

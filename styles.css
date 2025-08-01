@@ -500,14 +500,35 @@ input[type="radio"]:focus {
 
   /* Better contrast for message tabs */
   .message-tab {
-    background: var(--input-bg);
-    border: 1px solid var(--input-border);
-    border-radius: 8px;
+    background: var(--input-bg) !important;
+    border: 1px solid var(--input-border) !important;
+    color: var(--text-secondary) !important;
+    transition: all 0.2s ease;
+  }
+
+  .message-tab:hover {
+    background: var(--hover-bg) !important;
+    border-color: var(--accent-color) !important;
   }
 
   .message-tab.active {
-    background: var(--accent-color);
+    background: var(--accent-color) !important;
     color: var(--bg-primary) !important;
+    border-color: var(--accent-color) !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(194, 245, 66, 0.3) !important;
+  }
+
+  .dark .message-tab.active {
+    background: #c2f542 !important;
+    color: #1a1a1a !important;
+    box-shadow: 0 2px 8px rgba(194, 245, 66, 0.3) !important;
+  }
+
+  .light .message-tab.active {
+    background: #3f88f5 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(63, 136, 245, 0.3) !important;
   }
 
   /* Enhanced card contrast */
