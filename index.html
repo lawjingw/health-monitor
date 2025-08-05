@@ -31,6 +31,79 @@
     </script>
   </head>
   <body class="min-h-screen flex flex-col overflow-x-hidden">
+    <!-- Launch Page -->
+    <div
+      id="launchPage"
+      class="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 z-[100] flex items-center justify-center"
+    >
+      <div class="text-center space-y-8">
+        <!-- Logo/Icon -->
+        <div class="flex justify-center mb-6">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-[#c2f542] to-[#a8d63f] rounded-2xl flex items-center justify-center shadow-2xl"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-12 w-12 text-slate-900"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <!-- App Title -->
+        <div>
+          <h1
+            class="text-4xl md:text-5xl font-display font-bold text-white mb-2"
+          >
+            Health Monitor
+          </h1>
+          <p class="text-lg text-slate-400 font-medium">
+            Real-time Patient Care Dashboard
+          </p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-80 mx-auto">
+          <div class="bg-slate-700 rounded-full h-2 overflow-hidden">
+            <div
+              id="progressBar"
+              class="bg-gradient-to-r from-[#c2f542] to-[#a8d63f] h-full rounded-full transition-all duration-300 ease-out"
+              style="width: 0%"
+            ></div>
+          </div>
+          <div class="mt-3 flex justify-between text-sm text-slate-400">
+            <span id="loadingText">Initializing...</span>
+            <span id="progressPercent">0%</span>
+          </div>
+        </div>
+
+        <!-- Loading Animation -->
+        <div class="flex justify-center space-x-1">
+          <div
+            class="w-2 h-2 bg-[#c2f542] rounded-full animate-bounce"
+            style="animation-delay: 0ms"
+          ></div>
+          <div
+            class="w-2 h-2 bg-[#c2f542] rounded-full animate-bounce"
+            style="animation-delay: 150ms"
+          ></div>
+          <div
+            class="w-2 h-2 bg-[#c2f542] rounded-full animate-bounce"
+            style="animation-delay: 300ms"
+          ></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Alert Banner -->
     <div
       id="alertBanner"
@@ -688,7 +761,7 @@
 
     <!-- Mobile Navigation -->
     <nav
-      class="header-adaptive nav-adaptive md:hidden fixed bottom-0 left-0 right-0 backdrop-blur-sm border-t"
+      class="header-adaptive nav-adaptive md:hidden fixed bottom-0 left-0 right-0 backdrop-blur-sm border-t z-50"
     >
       <div class="grid grid-cols-4 h-16">
         <a

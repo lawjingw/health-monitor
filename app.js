@@ -2579,6 +2579,76 @@ function getBadgeClass(tag) {
   }
 }
 
+// Launch page functionality
+function initializeLaunchPage() {
+  const launchPage = document.getElementById('launchPage');
+  const progressBar = document.getElementById('progressBar');
+  const loadingText = document.getElementById('loadingText');
+  const progressPercent = document.getElementById('progressPercent');
+  
+  if (!launchPage || !progressBar || !loadingText || !progressPercent) {
+    console.error('Launch page elements not found');
+    // If launch page elements are not found, start app normally
+    init();
+    return;
+  }
+
+  // Loading steps with realistic timing
+  const loadingSteps = [
+    { progress: 15, text: 'Loading patient data...', duration: 600 },
+    { progress: 30, text: 'Establishing connections...', duration: 500 },
+    { progress: 50, text: 'Initializing monitoring systems...', duration: 700 },
+    { progress: 70, text: 'Setting up charts...', duration: 500 },
+    { progress: 85, text: 'Configuring alerts...', duration: 400 },
+    { progress: 95, text: 'Finalizing setup...', duration: 300 },
+    { progress: 100, text: 'Ready!', duration: 300 }
+  ];
+
+  let currentStep = 0;
+  let currentProgress = 0;
+
+  function updateProgress() {
+    if (currentStep >= loadingSteps.length) {
+      // Launch sequence complete
+      setTimeout(() => {
+        launchPage.style.opacity = '0';
+        launchPage.style.transform = 'scale(0.95)';
+        launchPage.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+        
+        setTimeout(() => {
+          launchPage.style.display = 'none';
+          // Initialize the main application after launch
+          init();
+        }, 500);
+      }, 400);
+      return;
+    }
+
+    const step = loadingSteps[currentStep];
+    const targetProgress = step.progress;
+    
+    // Animate progress bar
+    const progressInterval = setInterval(() => {
+      currentProgress += 1;
+      progressBar.style.width = `${currentProgress}%`;
+      progressPercent.textContent = `${currentProgress}%`;
+      
+      if (currentProgress >= targetProgress) {
+        clearInterval(progressInterval);
+        loadingText.textContent = step.text;
+        
+        setTimeout(() => {
+          currentStep++;
+          updateProgress();
+        }, step.duration);
+      }
+    }, 20); // Smooth animation
+  }
+
+  // Start the launch sequence
+  updateProgress();
+}
+
 // Toast notification system
 let toastContainer;
 const toasts = [];
@@ -2587,7 +2657,13 @@ let toastIdCounter = 0;
 // Initialize toast container reference when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   toastContainer = document.getElementById("toastContainer");
+  
+  // Start the launch sequence
+  initializeLaunchPage();
 });
+
+// Initialize the app (called after launch sequence)
+// Note: init() is now called from the launch sequence
 
 /**
  * Show a toast notification
@@ -2696,8 +2772,7 @@ function dismissToast(id) {
   }
 }
 
-// Initialize the app
-init();
+// Initialize the app (called after launch sequence)
 
 // Function to handle message actions (delete, archive)
 function handleMessageAction(messageId, action) {
